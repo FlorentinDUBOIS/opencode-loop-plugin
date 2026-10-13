@@ -6,7 +6,7 @@ This package is an OpenCode plugin with separate server and TUI entrypoints:
 
 - `src/server.ts` is the server plugin. It registers the `/loop` command, the loop tools, chat/session hooks, compaction context, and the scheduler that injects loop iterations while a session is idle.
 - `src/state.ts` owns loop persistence and lifecycle state. It stores JSON at `OPENCODE_LOOP_STATE_PATH` when set, otherwise under the user's OpenCode data location. It also owns interval parsing/formatting.
-- `src/tui.tsx` is the Solid/OpenTUI sidebar and command-palette UI. It is exported as source, so avoid adding heavy runtime dependencies here unless there is a strong reason.
+- `src/tui.tsx` is the Solid/OpenTUI sidebar and command-palette UI. It is built to `dist/tui.js` with `scripts/build-tui.ts`, which compiles the Solid JSX and leaves host-provided modules (`@opentui/*`, `solid-js`, `@opencode/*`) external, so avoid adding other runtime dependencies here.
 - `src/prompts.ts` contains the `/loop` command template, the per-iteration synthetic prompt, the loop system reminder, and the compaction context.
 - `test/` covers state, server hooks/tools/scheduler, and TUI helpers with Bun tests. Scheduler tests use 1-second intervals via the `min_interval_seconds` option.
 
@@ -21,7 +21,7 @@ This package is an OpenCode plugin with separate server and TUI entrypoints:
 ## Change Guidelines
 
 - Preserve the public Promise-based state API (`createLoop`, `listLoops`, `stopLoop`, `recordRunSent`, etc.) because OpenCode hooks and tests call it directly.
-- Keep `zod` pinned to the exact version `@opencode-ai/plugin` depends on; tool argument schemas fail typechecking across zod minor versions.
+- Keep `zod` pinned to the exact version `@opencode-ai/plugin` depends on; tool argument schemas fail typechecking across zod minor versions. The manifest says `^4.1.8` but `bun.lock` must keep 4.1.8: `@opencode-ai/plugin` 1.19.0 depends on exactly 4.1.8, and zod 4.6.7 fails `bun run typecheck` on `_zod.version.minor`.
 - Effect is intentionally used in the state/persistence boundary. Do not spread Effect into the TUI.
 - State writes should remain atomic: write to a temp file, then `rename` into place.
 - Use `OPENCODE_LOOP_STATE_PATH` for tests and smoke runs so you do not touch a real user's loop state.
@@ -39,7 +39,7 @@ bun run build
 bun run pack:dry-run
 ```
 
-`bun run build` writes `dist/server.js`. The package only publishes `dist`, `src/tui.tsx`, `LICENSE`, and `README.md`, so confirm `npm pack --dry-run` includes what runtime installation needs.
+`bun run build` writes `dist/server.js` and `dist/tui.js`; both are tracked (force-add them, `dist/` is ignored) and `dist` must stay loadable without `node_modules`. The package only publishes `dist`, `LICENSE`, and `README.md`, so confirm `npm pack --dry-run` includes what runtime installation needs.
 
 ## Publishing Flow
 

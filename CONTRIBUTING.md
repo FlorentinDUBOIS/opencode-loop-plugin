@@ -41,7 +41,7 @@ Useful scripts:
 2. Make your change, keeping the existing code style (no semicolons, 130-column lines, strict TypeScript).
 3. Add or update tests — behavior changes need regression coverage. Scheduler tests use 1-second intervals through the `min_interval_seconds` option.
 4. Run the local gates: `bun test && bun run lint && bun run typecheck && bun run build`.
-5. Commit the rebuilt `dist/server.js` when `src/server.ts` (or its imports) changed — the built file is tracked on purpose.
+5. Commit the rebuilt `dist/server.js` and `dist/tui.js` when `src/server.ts` or `src/tui.tsx` (or their imports) changed — the built file is tracked on purpose.
 6. Open a pull request against `main` describing the problem, the approach, and how you verified it. Link the related issue (`Closes #NN`) when one exists.
 
 ## CI and releases

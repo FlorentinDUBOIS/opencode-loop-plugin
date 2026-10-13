@@ -258,7 +258,7 @@ bun run build
 npm pack --dry-run
 ```
 
-The server build bundles its private Effect 3 persistence implementation. Keep it bundled: an OpenCode V2 host can resolve a bare `effect` import to its incompatible Effect 4 runtime. The package regression test loads the built server with an Effect 4 host to cover this boundary. The TUI remains exported as source.
+The server build bundles its private Effect 3 persistence implementation. Keep it bundled: an OpenCode V2 host can resolve a bare `effect` import to its incompatible Effect 4 runtime. The package regression test loads the built server with an Effect 4 host to cover this boundary. `bun run build` also bundles `zod` into `dist/server.js` and compiles the TUI to `dist/tui.js`, leaving only Node builtins and host-provided runtime modules (`@opentui/*`, `solid-js`, `@opencode/*`) as imports. The `dist` directory therefore loads on its own as a local plugin, with no `node_modules`: configure `file:///path/to/checkout/dist` and OpenCode V2 resolves `server.js` and `tui.js` from it.
 
 ## Publishing
 
@@ -281,7 +281,7 @@ OpenCode plugin modules are target-specific. This package exports separate modul
 {
   "exports": {
     "./server": "./dist/server.js",
-    "./tui": "./src/tui.tsx"
+    "./tui": "./dist/tui.js"
   }
 }
 ```

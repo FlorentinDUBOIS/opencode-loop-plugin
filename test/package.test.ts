@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import { readFileSync } from "node:fs"
 import { mkdtemp, rm, writeFile } from "node:fs/promises"
-import { createRequire } from "node:module"
+import { builtinModules, createRequire } from "node:module"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
@@ -58,4 +58,28 @@ test("published server loads when the host shares Effect 4", async () => {
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
+}, 10_000)
+
+test("built plugin imports only Node builtins and host-provided runtime modules", async () => {
+  const root = join(import.meta.dir, "..")
+  const build = Bun.spawn(["bun", "run", "build"], { cwd: root, stdout: "pipe", stderr: "pipe" })
+  const buildError = await new Response(build.stderr).text()
+  expect(await build.exited, buildError).toBe(0)
+
+  // A directory plugin loads without node_modules: anything else must be bundled.
+  const hostProvided = /^(?:@opentui\/|solid-js(?:\/|$)|@opencode\/)/
+  const transpiler = new Bun.Transpiler({ loader: "js" })
+  const unresolved = (["server.js", "tui.js"] as const).flatMap((file) =>
+    transpiler
+      .scan(readFileSync(join(root, "dist", file), "utf8"))
+      .imports.map((entry) => entry.path)
+      .filter(
+        (specifier) =>
+          !specifier.startsWith("node:") &&
+          !builtinModules.includes(specifier) &&
+          !(file === "tui.js" && hostProvided.test(specifier)),
+      )
+      .map((specifier) => `${file}: ${specifier}`),
+  )
+  expect(unresolved).toEqual([])
 }, 10_000)
