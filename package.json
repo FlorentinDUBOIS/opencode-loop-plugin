@@ -43,7 +43,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "bun run clean && bun build ./src/server.ts --outdir ./dist --target bun --external @opencode-ai/plugin && bun scripts/build-tui.ts",
+    "build": "bun run clean && bun build ./src/server.ts --outdir ./dist --target bun && bun scripts/build-tui.ts",
     "ci:version": "bun scripts/resolve-ci-version.ts",
     "lint": "eslint .",
     "pack:dry-run": "npm pack --dry-run",
@@ -52,28 +52,31 @@
     "prepublishOnly": "bun run test && bun run build"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.19.0",
-    "@opentui/solid": "^0.5.17",
-    "effect": "^3.22.2",
-    "solid-js": "^1.9.15",
-    "zod": "^4.1.8"
+    "@opencode-ai/plugin": "^1.19.5",
+    "@opentui/solid": "^0.7.0",
+    "effect": "^4.0.7",
+    "solid-js": "^1.9.17"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@opencode/plugin": "^2.0.28",
-    "@opencode/client": "^2.0.28",
-    "@opencode/theme": "^2.0.28",
-    "@opentui/core": "^0.5.17",
-    "@types/bun": "^1.4.3",
-    "eslint": "^10.12.0",
+    "@opencode/client": "^2.2.0",
+    "@opencode/plugin": "^2.2.0",
+    "@opencode/schema": "^2.2.0",
+    "@opencode/theme": "^2.2.0",
+    "@opentui/core": "^0.7.0",
+    "@types/bun": "^1.4.4",
+    "eslint": "^10.13.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.71.2",
-    "@opencode/schema": "^2.0.28"
+    "typescript-eslint": "^8.72.1"
   },
   "engines": {
-    "opencode": ">=1.17.1 || >=2.0.0"
+    "opencode": ">=1.17.1 <2 || >=2.2.0"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "overrides": {
+    "toml": "^5.0.1",
+    "zod": "^4.6.7"
   }
 }

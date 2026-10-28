@@ -21,7 +21,7 @@ This package is an OpenCode plugin with separate server and TUI entrypoints:
 ## Change Guidelines
 
 - Preserve the public Promise-based state API (`createLoop`, `listLoops`, `stopLoop`, `recordRunSent`, etc.) because OpenCode hooks and tests call it directly.
-- Keep `zod` pinned to the exact version `@opencode-ai/plugin` depends on; tool argument schemas fail typechecking across zod minor versions. The manifest says `^4.1.8` but `bun.lock` must keep 4.1.8: `@opencode-ai/plugin` 1.19.0 depends on exactly 4.1.8, and zod 4.6.7 fails `bun run typecheck` on `_zod.version.minor`.
+- Build V1 tool argument schemas through `tool.schema` from `@opencode-ai/plugin`. That keeps the schemas on the exact Zod instance the V1 SDK provides without adding a second direct Zod dependency whose minor version can make `bun run typecheck` fail on `_zod.version.minor`.
 - Effect is intentionally used in the state/persistence boundary. Do not spread Effect into the TUI.
 - State writes should remain atomic: write to a temp file, then `rename` into place.
 - Use `OPENCODE_LOOP_STATE_PATH` for tests and smoke runs so you do not touch a real user's loop state.

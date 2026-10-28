@@ -86,31 +86,33 @@ const LoopSchema = Schema.Struct({
   id: Schema.String,
   sessionID: Schema.String,
   prompt: Schema.String,
-  mode: Schema.optionalWith(Schema.Literal("interval", "dynamic"), { default: () => "interval" as const }),
-  keepAlive: Schema.optionalWith(Schema.Boolean, { default: () => false }),
+  mode: Schema.Literals(["interval", "dynamic"]).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed("interval" as const)),
+  ),
+  keepAlive: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(false))),
   intervalMs: NullableNumber,
-  status: Schema.Literal("active", "paused", "stopped", "completed"),
+  status: Schema.Literals(["active", "paused", "stopped", "completed"]),
   createdAt: Schema.Number,
   updatedAt: Schema.Number,
   nextRunAt: NullableNumber,
-  lastRunAt: Schema.optionalWith(NullableNumber, { default: () => null }),
-  lastResult: Schema.optionalWith(Schema.NullOr(Schema.Literal("sent", "skipped_busy", "skipped_plan", "failed")), {
-    default: () => null,
-  }),
-  lastError: Schema.optionalWith(NullableString, { default: () => null }),
-  consecutiveFailures: Schema.optionalWith(Schema.Number, { default: () => 0 }),
-  nextRetryAt: Schema.optionalWith(NullableNumber, { default: () => null }),
-  blockedReason: Schema.optionalWith(NullableString, { default: () => null }),
-  lastReason: Schema.optionalWith(NullableString, { default: () => null }),
-  runCount: Schema.optionalWith(Schema.Number, { default: () => 0 }),
-  maxRuns: Schema.optionalWith(NullableNumber, { default: () => null }),
-  agent: Schema.optionalWith(NullableString, { default: () => null }),
-  stopReason: Schema.optionalWith(NullableString, { default: () => null }),
-  ownerID: Schema.optionalWith(NullableString, { default: () => null }),
-  ownerLeaseUntil: Schema.optionalWith(NullableNumber, { default: () => null }),
-  ownerRevision: Schema.optionalWith(Schema.Number, { default: () => 0 }),
-  runClaimToken: Schema.optionalWith(Schema.Number, { default: () => 0 }),
-  scheduleRevision: Schema.optionalWith(Schema.Number, { default: () => 0 }),
+  lastRunAt: NullableNumber.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  lastResult: Schema.NullOr(Schema.Literals(["sent", "skipped_busy", "skipped_plan", "failed"])).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(null)),
+  ),
+  lastError: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  consecutiveFailures: Schema.Number.pipe(Schema.withDecodingDefaultKey(Effect.succeed(0))),
+  nextRetryAt: NullableNumber.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  blockedReason: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  lastReason: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  runCount: Schema.Number.pipe(Schema.withDecodingDefaultKey(Effect.succeed(0))),
+  maxRuns: NullableNumber.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  agent: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  stopReason: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  ownerID: NullableString.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  ownerLeaseUntil: NullableNumber.pipe(Schema.withDecodingDefaultKey(Effect.succeed(null))),
+  ownerRevision: Schema.Number.pipe(Schema.withDecodingDefaultKey(Effect.succeed(0))),
+  runClaimToken: Schema.Number.pipe(Schema.withDecodingDefaultKey(Effect.succeed(0))),
+  scheduleRevision: Schema.Number.pipe(Schema.withDecodingDefaultKey(Effect.succeed(0))),
 })
 const SessionLeaseSchema = Schema.Struct({
   sessionID: Schema.String,
@@ -120,10 +122,10 @@ const SessionLeaseSchema = Schema.Struct({
 })
 const StateSchema = Schema.Struct({
   version: Schema.Literal(1),
-  loops: Schema.Record({ key: Schema.String, value: LoopSchema }),
-  sessionLeases: Schema.optionalWith(Schema.Record({ key: Schema.String, value: SessionLeaseSchema }), {
-    default: () => ({}),
-  }),
+  loops: Schema.Record(Schema.String, LoopSchema),
+  sessionLeases: Schema.Record(Schema.String, SessionLeaseSchema).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed({})),
+  ),
 })
 
 export type LoopSnapshot = Loop & {
@@ -158,7 +160,7 @@ function mutableState(state: Schema.Schema.Type<typeof StateSchema>): State {
 }
 
 function decodeState(value: unknown) {
-  return Schema.decodeUnknown(StateSchema)(value).pipe(
+  return Schema.decodeUnknownEffect(StateSchema)(value).pipe(
     Effect.map(mutableState),
     Effect.mapError((cause) => new StateDecodeError({ cause })),
   )
@@ -176,8 +178,9 @@ function readStateEffect() {
       }),
     ),
     Effect.flatMap(decodeState),
-    Effect.catchAll((error) =>
-      error._tag === "StateReadError" && isMissingStateFile(error.cause) ? Effect.succeed(emptyState()) : Effect.fail(error),
+    Effect.catchIf(
+      (error) => error._tag === "StateReadError" && isMissingStateFile(error.cause),
+      () => Effect.succeed(emptyState()),
     ),
   )
 }

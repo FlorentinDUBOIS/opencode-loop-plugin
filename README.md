@@ -66,7 +66,7 @@ OpenCode detects both package entrypoints and writes the plugin into the server 
 
 ### OpenCode 2
 
-This plugin supports OpenCode 2 (`2.x`) while remaining compatible with OpenCode 1.
+This plugin supports OpenCode 2.2 and later while remaining compatible with OpenCode 1.17.1 and later. OpenCode 2.0 and 2.1 use older SDK and OpenTUI contracts and are outside the supported host range.
 
 ```bash
 opencode plugin add @prevalentware/opencode-loop-plugin
@@ -258,7 +258,7 @@ bun run build
 npm pack --dry-run
 ```
 
-The server build bundles its private Effect 3 persistence implementation. Keep it bundled: an OpenCode V2 host can resolve a bare `effect` import to its incompatible Effect 4 runtime. The package regression test loads the built server with an Effect 4 host to cover this boundary. `bun run build` also bundles `zod` into `dist/server.js` and compiles the TUI to `dist/tui.js`, leaving only Node builtins and host-provided runtime modules (`@opentui/*`, `solid-js`, `@opencode/*`) as imports. The `dist` directory therefore loads on its own as a local plugin, with no `node_modules`: configure `file:///path/to/checkout/dist` and OpenCode V2 resolves `server.js` and `tui.js` from it.
+The server build bundles its private Effect 4 persistence implementation. Keep it bundled so the plugin does not depend on the host's exact Effect patch version. The package regression test also loads the built server with the Effect 4 runtime supplied by OpenCode to cover that boundary. V1 tool argument schemas come from `tool.schema` in `@opencode-ai/plugin`, so they use the SDK's own Zod instance without a second direct Zod dependency. `bun run build` compiles the TUI to `dist/tui.js` and leaves only Node builtins and host-provided runtime modules (`@opentui/*`, `solid-js`, `@opencode/*`) as imports. The `dist` directory therefore loads on its own as a local plugin, with no `node_modules`: configure `file:///path/to/checkout/dist` and OpenCode V2 resolves `server.js` and `tui.js` from it.
 
 ## Publishing
 

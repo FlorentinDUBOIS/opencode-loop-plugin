@@ -1,9 +1,8 @@
-import type { Config, Plugin } from "@opencode-ai/plugin"
+import { tool as v1Tool, type Config, type Plugin } from "@opencode-ai/plugin"
 import type * as PluginV2 from "@opencode/plugin"
 import type { Info as ToolV2Info } from "@opencode/plugin/promise/tool"
 import type { Tool as ToolSchema } from "@opencode/schema/tool"
 import { randomUUID } from "node:crypto"
-import { z } from "zod"
 import {
   DEFAULT_MAX_LOOPS_PER_SESSION,
   DEFAULT_MIN_INTERVAL_SECONDS,
@@ -69,6 +68,7 @@ const SESSION_LEASE_MS = 90_000
 const SESSION_LEASE_HEARTBEAT_MS = 30_000
 const DEFAULT_RESTRICTED_AGENTS = ["plan"]
 const LOOP_SYSTEM_MARKER = "OpenCode loop mode"
+const z = v1Tool.schema
 
 function commandNameFromOptions(options?: Options) {
   const name = options?.command_name?.trim() || DEFAULT_COMMAND_NAME

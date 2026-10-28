@@ -17,6 +17,13 @@ test("published TUI runtime imports are production dependencies", () => {
   }
 })
 
+test("published host range excludes unsupported OpenCode 2.0 and 2.1", () => {
+  const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
+    engines?: { opencode?: string }
+  }
+  expect(packageJson.engines?.opencode).toBe(">=1.17.1 <2 || >=2.2.0")
+})
+
 test("published server loads when the host shares Effect 4", async () => {
   const root = join(import.meta.dir, "..")
   const build = Bun.spawn(["bun", "run", "build"], { cwd: root, stdout: "pipe", stderr: "pipe" })
