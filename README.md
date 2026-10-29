@@ -262,7 +262,7 @@ The server build bundles its private Effect 4 persistence implementation. Keep i
 
 ## Publishing
 
-This package is set up for npm Trusted Publishing from GitHub Actions. On every push to `main`, CI runs typecheck, lint, and unit tests in parallel. If they all pass, the publish job computes the next patch version from the latest version on npm, builds the package, and runs `npm publish`.
+This package is set up for npm Trusted Publishing from GitHub Actions. On every push to `main`, CI runs typecheck, lint, and unit tests in parallel. In `prevalentWare/opencode-loop-plugin`, if they all pass, the publish job computes the next patch version from the latest version on npm, builds the package, and runs `npm publish`. Forks run the validation jobs but skip the publish job.
 
 Before the first automated publish, configure the package on npm:
 
